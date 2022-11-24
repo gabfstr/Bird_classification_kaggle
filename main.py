@@ -7,7 +7,7 @@ from torchvision import datasets
 from torch.autograd import Variable
 from tqdm import tqdm
 from datetime import datetime
-import string
+import csv 
 
 # Training settings
 parser = argparse.ArgumentParser(description='RecVis A3 training script')
@@ -66,6 +66,9 @@ def main():
 
     def train(epoch):
         model.train()
+        correct=0
+        total_loss=0
+        train_loss=0
         for batch_idx, (data, target) in enumerate(train_loader):
             if use_cuda:
                 data, target = data.cuda(), target.cuda()
@@ -75,10 +78,21 @@ def main():
             loss = criterion(output, target)
             loss.backward()
             optimizer.step()
+            total_loss+=loss.data.item()
+            train_loss += loss.cpu().item() * data.size(0)
             if batch_idx % args.log_interval == 0:
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                     epoch, batch_idx * len(data), len(train_loader.dataset),
                     100. * batch_idx / len(train_loader), loss.data.item()))
+            
+            pred = output.data.max(1, keepdim=True)[1]
+            correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+        total_loss=total_loss/len(train_loader.dataset)
+        train_loss /= len(train_loader.dataset)
+        print("train_loss : ", train_loss)
+        train_acc = (100. * correct / len(train_loader.dataset)).data.item()
+        return loss.data.item(), train_acc
+        
 
     def validation():
         model.eval()
@@ -96,17 +110,38 @@ def main():
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
         validation_loss /= len(val_loader.dataset)
+        validation_acc = (100. * correct / len(val_loader.dataset)).data.item()
         print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
             validation_loss, correct, len(val_loader.dataset),
-            100. * correct / len(val_loader.dataset)))
+            validation_acc))
+        return validation_loss, validation_acc
 
 
+    
+    rows=[]
     for epoch in range(1, args.epochs + 1):
-        train(epoch)
-        validation()
+        train_loss, train_acc = train(epoch)
+        val_loss, val_acc = validation()
+        print("train_loss : {:.6f} val_loss : {:.6f}\ntrain_acc : {:.1f}% val_acc : {:.1f}%".format(
+                train_loss,val_loss, train_acc, val_acc))
+        #storing results for csv
+        rows.append([epoch,train_loss,val_loss, train_acc, val_acc])
+
+
         model_file = args.experiment + '/model_' + str(epoch) + '.pth'
         torch.save(model.state_dict(), model_file)
         print('Saved model to ' + model_file + '. You can run `python evaluate.py --model ' + model_file + '` to generate the Kaggle formatted csv file\n')
+    
+    #writing results in csv
+    fields = ["epoch", "train_loss","val_loss", "train_acc", "val_acc"]
+    filename = "results_test.csv"
+    with open(filename, 'w') as csvfile: 
+        # creating a csv writer object 
+        csvwriter = csv.writer(csvfile)   
+        # writing the fields 
+        csvwriter.writerow(fields)  
+        # writing the data rows 
+        csvwriter.writerows(rows)
 
 
 if __name__ == '__main__':

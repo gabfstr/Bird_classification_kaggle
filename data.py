@@ -9,9 +9,9 @@ import torchvision.transforms as transforms
 # the training set
 data_transforms = {
     "train" : transforms.Compose([
-        transforms.Resize((64, 64)),
+        transforms.Resize(256),
         transforms.RandomRotation(50),
-        #transforms.RandomResizedCrop(size=64, scale=(0.8, 1.0)),
+        transforms.RandomResizedCrop(size=224),
         transforms.ColorJitter(),   
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
@@ -19,14 +19,14 @@ data_transforms = {
                                     std=[0.229, 0.224, 0.225])
         ]),
     "val" : transforms.Compose([
-        transforms.Resize((64, 64)),
-        #transforms.CenterCrop(size=224),
+        transforms.Resize(256),
+        transforms.CenterCrop(size=224),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     "test" : transforms.Compose([
-        transforms.Resize((64, 64)),
-        #transforms.CenterCrop(size=224),
+        transforms.Resize(256),
+        transforms.CenterCrop(size=224),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),

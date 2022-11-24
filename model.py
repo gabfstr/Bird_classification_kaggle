@@ -33,7 +33,10 @@ class Net(nn.Module):
 
         self.resnet = models.resnet50(weights="ResNet50_Weights.IMAGENET1K_V2")
         self.num_ftrs = self.resnet.fc.out_features
-        self.fc = nn.Linear(self.num_ftrs, nclasses)
+        self.fc = nn.Sequential(
+            # add dropout ?
+                nn.Linear(self.num_ftrs, nclasses)
+                )
 
         # freeze the resnet layers
         #for param in self.resnet.parameters():
@@ -41,5 +44,4 @@ class Net(nn.Module):
             
 
     def forward(self,x):
-        x = self.resnet(x)
-        return self.fc(x)
+        return self.resnet(x)
