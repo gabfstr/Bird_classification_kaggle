@@ -65,10 +65,12 @@ def main():
 
 
     def train(epoch):
+        
+        print(model,"\n")
+
         model.train()
         correct=0
         total_loss=0
-        train_loss=0
         for batch_idx, (data, target) in enumerate(train_loader):
             if use_cuda:
                 data, target = data.cuda(), target.cuda()
@@ -79,7 +81,6 @@ def main():
             loss.backward()
             optimizer.step()
             total_loss+=loss.data.item()
-            train_loss += loss.cpu().item() * data.size(0)
             if batch_idx % args.log_interval == 0:
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                     epoch, batch_idx * len(data), len(train_loader.dataset),
@@ -88,10 +89,8 @@ def main():
             pred = output.data.max(1, keepdim=True)[1]
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
         total_loss=total_loss/len(train_loader.dataset)
-        train_loss /= len(train_loader.dataset)
-        print("train_loss : ", train_loss)
         train_acc = (100. * correct / len(train_loader.dataset)).data.item()
-        return loss.data.item(), train_acc
+        return total_loss, train_acc
         
 
     def validation():
