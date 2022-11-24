@@ -6,6 +6,8 @@ import torch.optim as optim
 from torchvision import datasets
 from torch.autograd import Variable
 from tqdm import tqdm
+from datetime import datetime
+import string
 
 # Training settings
 parser = argparse.ArgumentParser(description='RecVis A3 training script')
@@ -13,8 +15,8 @@ parser.add_argument('--data', type=str, default='bird_dataset', metavar='D',
                     help="folder where data is located. train_images/ and val_images/ need to be found in the folder")
 parser.add_argument('--batch-size', type=int, default=64, metavar='B',
                     help='input batch size for training (default: 64)')
-parser.add_argument('--epochs', type=int, default=10, metavar='N',
-                    help='number of epochs to train (default: 10)')
+parser.add_argument('--epochs', type=int, default=15, metavar='N',
+                    help='number of epochs to train (default: 15)')
 parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
                     help='learning rate (default: 0.01)')
 parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
@@ -40,18 +42,19 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(args.data + '/train_images',
-                            transform=data_transforms),
+                            transform=data_transforms["train"]),
         batch_size=args.batch_size, shuffle=True, num_workers=1)
 
     val_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder(args.data + '/val_images',
-                            transform=data_transforms),
+                            transform=data_transforms["val"]),
         batch_size=args.batch_size, shuffle=False, num_workers=1)
 
     # Neural network and optimizer
     # We define neural net in model.py so that it can be reused by the evaluate.py script
     from model import Net
     model = Net()
+
     if use_cuda:
         print('Using GPU')
         model.cuda()
@@ -107,4 +110,9 @@ def main():
 
 
 if __name__ == '__main__':
+    start = datetime.now()
     main()
+    end=datetime.now()
+    exec_time = (end - start).total_seconds()
+    print("\n")
+    print("Total running time : {0} min {1} s".format( int(exec_time // 60), round(exec_time % 60),0))
