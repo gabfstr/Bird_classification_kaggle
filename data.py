@@ -9,24 +9,24 @@ import torchvision.transforms as transforms
 # the training set
 data_transforms = {
     "train" : transforms.Compose([
-        transforms.Resize(256),
+        transforms.Resize(512),
         transforms.RandomRotation(50),
-        transforms.RandomResizedCrop(size=224),
-        transforms.ColorJitter(),   
+        transforms.RandomResizedCrop(size=512),
+        transforms.ColorJitter(brightness=0.1,contrast=0.1,saturation=0.1,hue=0),   
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                     std=[0.229, 0.224, 0.225])
         ]),
     "val" : transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(size=224),
+        transforms.Resize(512),
+        transforms.CenterCrop(size=512),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     "test" : transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(size=224),
+        transforms.Resize(512),
+        transforms.CenterCrop(size=512),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
